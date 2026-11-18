@@ -1,141 +1,139 @@
-# Практикум Цифровой кафедры
-# Вторая самостоятельная версия: журнал абитуриента МЖ-МИЭП
-# Темы вопросов — культурология и зарубежная литература
+import datetime
+import random
 
-from datetime import date
-from random import choice, sample, shuffle
+print("*" * 42)
+print(" Деканат МГИМО восстановлен")
+print(" МЖ-МИЭП · проект про культуру и тексты")
+print("*" * 42)
 
+# Раньше программа стирала введённые ФИО и факультет. Теперь оставляет как есть.
+first_name = input("Имя: ")
+last_name = input("Фамилия: ")
+faculties = ["МО", "МЭО", "МП", "МЖ", "МИЭП", "ФУП", "ФФЭ", "ФЛМК", "МБ", "ИМТУР"]
+print("Можно выбрать:", " | ".join(faculties))
+faculty = input("Факультет: ")
 
-GROUPS = ["МО", "МЭО", "МП", "МЖ", "МИЭП", "ФУП", "ФФЭ", "ФЛМК", "МБ", "ИМТУР"]
+raw_year = input("Год рождения: ").strip()
+today = datetime.date.today().year
+birth_year = today - 19 if raw_year == "" else int(raw_year)
+# Раньше возраст считался по длине имени. Теперь по году.
+age = today - birth_year
 
-PHRASES = {
-    "en": "Welcome back, {person}. Your student file is open.",
-    "it": "Bentornata, {person}. Il fascicolo e pronto.",
-    "es": "Hola de nuevo, {person}. El expediente ya esta abierto.",
-    "zh": "{person}，档案已经打开。",
-    "ar": "اهلا بعودتك يا {person}. الملف جاهز.",
-    "pl": "Witaj ponownie, {person}. Teczka studencka jest otwarta.",
+print(f"\nАнкета: {first_name} {last_name}")
+print(f"Факультет {faculty}, {age} лет")
+
+# Капча: раньше int() стоял вокруг сравнения и всегда ломал проверку
+x = random.randint(4, 12)
+y = random.randint(1, 7)
+typed = input(f"Сколько будет {x} + {y}? ")
+human_ok = int(typed) == x + y
+print("Капча принята." if human_ok else f"Нужно было {x + y}.")
+
+# Свои языки: португальский и корейский
+greetings = {
+    "en": "Hello, {first_name}. Your record is saved.",
+    "fr": "Bonjour, {first_name}. Le dossier est ouvert.",
+    "zh": "{first_name}，档案已经保存。",
+    "pt": "Ola, {first_name} {last_name}! Bem-vinda ao MGIMO.",
+    "ko": "{first_name}님, MGIMO에 오신 것을 환영합니다.",
 }
-
-NAMES = {
+language_names = {
     "en": "английский",
-    "it": "итальянский",
-    "es": "испанский",
+    "fr": "французский",
     "zh": "китайский",
-    "ar": "арабский",
-    "pl": "польский",
+    "pt": "португальский",
+    "ko": "корейский",
 }
 
-CARDS = [
-    ("культура", "смысловое пространство, которое человек создаёт поверх биологии"),
-    ("хронотоп", "связка художественного времени и пространства у Бахтина"),
-    ("полифония", "несколько самостоятельных голосов внутри одного романа"),
-    ("орософия", "у Вяземского это Гора, Путь и меняющийся Восходитель"),
-    ("просвещение", "эпоха критики предрассудков: от 1688 года до революции 1789 года"),
-    ("романтизм", "эстетика, где в центре личность, чувство и разрыв с порядком"),
-]
+code = input("Код языка: en, fr, zh, pt, ko: ").strip().lower()
+if code not in greetings:
+    print("Код неизвестен, беру английский.")
+    code = "en"
+# Раньше приветствие бралось случайным языком
+print(greetings[code].format(first_name=first_name, last_name=last_name))
+heard = input(f"Это {language_names[code]}? да или нет: ").strip().lower()
+language_point = heard.startswith("д")
+if not language_point:
+    print("На экране был", language_names[code])
+
+score = int(language_point)
+studied = input("Язык этого практикума: ").strip().lower()
+if studied in {"python", "питон", "пайтон"}:
+    print("Да.")
+    score += 1
+else:
+    print("Сейчас работаем на Python.")
+
+# Свой словарь предметной области. Определения совпадают с терминами.
+glossary = {
+    "культура": "смысловое пространство, созданное человеком, а не только этикет.",
+    "хронотоп": "единство времени и пространства в художественном тексте.",
+    "полифония": "несколько равноправных голосов в одном произведении.",
+    "орософия": "образ культуры у Вяземского: Гора, Путь и Восходитель.",
+    "просвещение": "эпоха разума между Славной революцией и 1789 годом.",
+    "романтизм": "направление, где центр — личность, чувство и свобода.",
+}
 
 
-def ask(label):
-    return input(label).strip()
-
-
-def student_age(raw_year):
-    this_year = date.today().year
-    born = this_year - 18 if raw_year == "" else int(raw_year)
-    return born, this_year - born
-
-
-def captcha():
-    base = choice(range(11, 30))
-    extra = choice(range(4, 15))
-    reply = ask(f"Чтобы продолжить, посчитайте {base} + {extra}: ")
-    good = reply == str(base + extra)
-    print("Можно идти дальше." if good else f"Ответ был {base + extra}.")
-    return good
-
-
-def language_block(person):
-    print("Доступные коды:", " ".join(sorted(PHRASES)))
-    code = ask("Код языка, который вы учите: ").lower()
-    if code not in PHRASES:
-        print("Такого кода нет. Беру английский.")
-        code = "en"
-    print(PHRASES[code].format(person=person))
-    heard = ask("Узнали язык? напишите да или нет: ").lower()
-    return code, heard.startswith("д")
-
-
-def programming_check():
-    reply = ask("Практикум идёт на языке: ").lower()
-    success = reply in {"python", "питон", "пайтон"}
-    print("Верно, Python." if success else "Для этой работы нужен Python.")
-    return success
-
-
-def literature_quiz():
-    term, meaning = choice(CARDS)
-    pool = [term]
-    pool.extend(sample([name for name, _ in CARDS if name != term], 3))
-    shuffle(pool)
-    print("\nЧто это за понятие?")
-    print(meaning)
-    for index, option in enumerate(pool, 1):
-        print(f"[{index}] {option}")
-    reply = ask("Ваш номер: ")
-    if reply.isdigit() and pool[int(reply) - 1] == term:
-        print("Есть попадание.")
-        return True
-    print("Нужный вариант:", term)
-    return False
-
-
-def blank_sentence():
-    original = (
-        "Нора уходит из кукольного дома, потому что хочет быть человеком, "
-        "а не ролью, которую ей назначила семья."
-    )
-    long_words = [piece.strip(".,") for piece in original.split() if len(piece.strip(".,")) > 6]
-    hidden = choice(long_words)
-    masked = original.replace(hidden, "______", 1)
-    print("\n" + masked)
-    reply = ask("Какое слово стёрто? ")
-    ok = reply.lower() == hidden.lower()
-    print("Совпало." if ok else f"В тексте было «{hidden}».")
-    return ok
-
-
-def bonus_room():
-    reply = ask("Последний вопрос: номер комнаты Цифровой кафедры? ")
-    if reply.lower() in {"3053", "одинцово"}:
-        print("Засчитано.")
+def quiz(glossary):
+    term = random.choice(list(glossary))
+    basket = [term] + random.sample([item for item in glossary if item != term], 2)
+    random.shuffle(basket)
+    print("\nОпределение:", glossary[term])
+    for number, option in enumerate(basket, start=1):
+        print(number, option)
+    pick = input("Номер: ")
+    if pick.isdigit() and basket[int(pick) - 1] == term:
+        print("Совпало.")
         return 1
-    print("Не засчитано. Можно посмотреть dd.mgimo.ru")
+    print("Правильно было:", term)
     return 0
 
 
-print("ЖУРНАЛ АБИТУРИЕНТА")
-print("МГИМО, программа МЖ-МИЭП\n")
+score += quiz(glossary)
+score += quiz(glossary)
 
-given = ask("Как вас зовут? ")
-family = ask("Ваша фамилия? ")
-print("Список факультетов:", ", ".join(GROUPS))
-group = ask("Факультет из списка: ")
-born, age = student_age(ask("Год рождения: "))
+article = (
+    "Культура начинается там, где человек создаёт память, "
+    "образы и нормы, а не остаётся только биологическим существом."
+)
+candidates = [word.strip(".,") for word in article.split() if len(word.strip(".,")) > 5]
+hidden = random.choice(candidates)
+print("\n" + article.replace(hidden, "______", 1))
+word = input("Какое слово пропущено? ")
+if word.lower() == hidden.lower():
+    print("Есть.")
+    score += 1
+else:
+    print("В тексте стояло:", hidden)
 
-print(f"\nЗаписали: {given} {family}")
-print(f"Группа/факультет: {group}")
-print(f"Сейчас вам {age}, год рождения {born}")
+print("\n" + "*" * 42)
+print(f"{last_name} {first_name} | {faculty} | {birth_year} г.р.")
+print("Язык анкеты:", language_names[code])
+print("Баллы до бонуса:", score)
+room = input("Комната Цифровой кафедры: ").strip().lower()
+if room in {"3053", "одинцово"}:
+    score += 1
+    print("Бонус добавлен.")
+else:
+    print("Бонуса нет. Смотрите dd.mgimo.ru")
+print("Финальный счёт деканата:", score)
 
-marks = [captcha()]
-lang, lang_ok = language_block(given)
-marks.append(lang_ok)
-marks.append(programming_check())
-marks.append(literature_quiz())
-marks.append(blank_sentence())
-marks.append(bonus_room() == 1)
-
-got = sum(marks)
-print("\nИтог журнала")
-print(f"{family} {given} | {group} | язык: {NAMES[lang]}")
-print(f"Отметок «верно»: {got} из {len(marks)}")
+# Отдельная игра по дополнительному заданию.
+# В форме одно место для файла, поэтому она идёт следом в этом же .py
+print("\nИгра: угадай год")
+events = {
+    "Славная революция в Англии": "1688",
+    "Начало Великой французской революции": "1789",
+    "Эссе Бахтина «Искусство и ответственность»": "1919",
+    "Премьера «Кукольного дома» Ибсена": "1879",
+}
+hits = 0
+for event in random.sample(list(events), 3):
+    reply = input(f"Год события «{event}»: ").strip()
+    if reply == events[event]:
+        print("Верно.")
+        hits += 1
+    else:
+        print("Нет, год:", events[event])
+print(f"В игре {hits} из 3")
